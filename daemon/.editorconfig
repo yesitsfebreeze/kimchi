@@ -1,0 +1,19 @@
+# Top-level EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Go files
+[*.go]
+indent_style = tab
+indent_size = 2
+
+# Go files
+[*.rs]
+indent_style = tab
+indent_size = 2

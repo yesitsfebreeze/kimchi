@@ -1,0 +1,16 @@
+[package]
+name = "kitsuned"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+wasmer = "6.0.1"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "blocking", "gzip", "brotli", "rustls-tls"] }
+dirs = "6.0.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tower-lsp = "0.20"
+tree-sitter = {version = "0.25", features = ["wasm"]}
+tree-sitter-rust = "0.24.0"
+anyhow = "1"

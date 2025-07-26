@@ -1,0 +1,28 @@
+{
+	"Print to console": {
+		"scope": "go",
+		"prefix": "ll",
+		"body": [
+			"Log($1)",
+		],
+		"description": "Log output to console"
+	},
+	"Dump to console": {
+		"scope": "go",
+		"prefix": "dd",
+		"body": [
+			"spew.Dump($1)",
+		],
+		"description": "Dump output to console"
+	},
+	"struct": {
+		"scope": "go",
+		"prefix": "ss",
+		"body": [
+			"type $1 struct {",
+			"\t",
+			"}",
+		],
+		"description": "Dump output to console"
+	}
+}

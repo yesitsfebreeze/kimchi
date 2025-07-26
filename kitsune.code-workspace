@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"name": "editor",
+			"path": "./editor"
+		},
+ 		{
+			"name": "daemon",
+			"path": "./daemon"
+		},
+		{
+			"name": "user",
+			"path": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\feb\\.config\\kitsune"
+		},
+		{
+			"name": "bin",
+			"path": "./bin"
+		},
+
+	],
+	"settings": {}
+}
