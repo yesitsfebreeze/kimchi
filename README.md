@@ -1,6 +1,6 @@
 # Kitsune
 
-<img src="dev/logo.svg" alt="Logo" height="60">
+<img src="doc/logo.svg" alt="Logo" height="60">
 
 **Kitsune** is a terminal-native, modalless code editor written in Go — designed for speed, scriptability, and minimalism.
 
@@ -14,7 +14,7 @@ It’s *insert-first*, with fast Ctrl-based commands and advanced leader key str
 - Zero-modality: no `insert/normal` mode toggling
 - Lua-configurable with project awareness
 
-## Example Config (`.kit.lua`)
+## Example Config (`kitsune.lua`)
 
 ```lua
 cfg('indent.saved.style', 'spaces')
