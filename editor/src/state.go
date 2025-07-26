@@ -85,8 +85,6 @@ func InitState() {
 		state.DisplayLogBuffer = true
 	}
 
-	state.Times.BootTime.Log("Boot completed in: %s")
-
 	if state.Args.Dump {
 		DumpState()
 		os.Exit(0)

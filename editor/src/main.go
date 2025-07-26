@@ -9,8 +9,9 @@ import (
 const DEBUG = true
 
 func Shutdown() {
-	CloseLogFile()
+	DaemonStop()
 	ResetScreen()
+	CloseLogFile()
 	if r := recover(); r != nil {
 		fmt.Fprintf(os.Stderr, "\nPANIC: %v\n", r)
 		buf := make([]byte, 1<<16)
@@ -19,12 +20,16 @@ func Shutdown() {
 	}
 }
 
+// check if the deamon is running
+// if not start it
+
 func main() {
 	defer Shutdown()
-
 	InitState()
 	InitScreen()
+	InitDaemon()
 	Init()
+	state.Times.BootTime.Log("Boot completed in %s")
 	StartRender()
 }
 

@@ -38,5 +38,14 @@ func OpenInputFile() {
 		state.Panes.Two.Visible = true
 		state.Panes.Two.Area.Focus()
 
+		result, err := DaemonSend(DaemonHighlight, DaemonData{
+			Lang: "go",
+			Code: ctx.Buffer.ToString(),
+		})
+
+		if err == nil {
+			Log("OpenInputFile: %s", result)
+		}
+
 	}
 }

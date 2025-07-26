@@ -1,6 +1,6 @@
 # Kitsune
 
-<img src="doc/logo.svg" alt="Logo" height="60">
+<img src=".doc/logo.svg" alt="Logo" height="60">
 
 **Kitsune** is a terminal-native, modalless code editor written in Go — designed for speed, scriptability, and minimalism.
 

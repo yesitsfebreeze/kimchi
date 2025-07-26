@@ -45,6 +45,14 @@ func (buf *Buffer) MarkModified() {
 	buf.Modified = true
 }
 
+func (buf *Buffer) ToString() string {
+	var result string
+	for _, line := range buf.Lines {
+		result += line.ToString() + "\n"
+	}
+	return result
+}
+
 func (buf *Buffer) IsEmpty() bool {
 	return len(buf.Lines) == 0
 }
@@ -55,6 +63,14 @@ func (l *Line) ToRunes() []rune {
 		runes[i] = char.Rune
 	}
 	return runes
+}
+
+func (l *Line) ToString() string {
+	runes := l.ToRunes()
+	if runes == nil {
+		return ""
+	}
+	return string(runes)
 }
 
 func (l *Line) SetRuneAt(x int, runes []rune, style Style) {

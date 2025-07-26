@@ -12,6 +12,9 @@ GO_INSTALL_DIR = /usr/local/go
 RELEASE_FLAGS = -s -w
 DEBUG_FLAGS = -N -l
 
+%::  # silence unhandled args
+	@:
+
 help: # Show this help
 	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done
 
@@ -20,8 +23,7 @@ release:
 	@go mod tidy
 	@go build -C src -o ../$(OUT) -ldflags="$(RELEASE_FLAGS)"
 	@upx --best --lzma ./$(OUT)
-	@mkdir -p ../bin
-	@cp ./$(OUT) ../$(OUT)
+	@make -B __copy_bin
 
 build: # builds the executeable
 	@make install -B
@@ -31,7 +33,8 @@ build: # builds the executeable
 launch: # [args] -> builds and runs the BIN
 	@go mod tidy
 	@go build -C src -o ../$(OUT) -ldflags="$(RELEASE_FLAGS)"
-	@./$(OUT) $(filter-out $@,$(MAKECMDGOALS))
+	@make -B __copy_bin
+	@../$(OUT) $(filter-out $@,$(MAKECMDGOALS))
 
 run: # [args] runs the BIN via go run
 	@go run -C . ./src $(filter-out $@,$(MAKECMDGOALS))
@@ -42,3 +45,7 @@ clean: # removes the BIN and any temporary files
 
 install: # installs go and dependencies
 	@bash ./scripts/install_go.sh $(GO_VERSION)
+
+__copy_bin:
+	@mkdir -p ../bin
+	@cp ./$(OUT) ../$(OUT)

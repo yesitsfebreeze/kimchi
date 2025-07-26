@@ -13,4 +13,4 @@ ESCAPED_SOURCE=$(printf '%s' "$SOURCE_CODE" \
 JSON_PAYLOAD=$(printf '{"lang":"python","job":"ast","path":"D:\dev\kitsune\src"}' "$ESCAPED_SOURCE")
 
 # Send it
-printf '%s\n' "$JSON_PAYLOAD" | socat - UNIX-CONNECT:/tmp/kitd.sock
+printf '%s\n' "$JSON_PAYLOAD" | socat - UNIX-CONNECT:/tmp/kitsuned.sock

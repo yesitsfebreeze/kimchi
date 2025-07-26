@@ -7,7 +7,23 @@ use reqwest::Client;
 const PROVIDER: &str = "https://github.com/tree-sitter";
 const SUB_URL: &str = "releases/latest/download";
 
-pub fn grammar_cache_dir() -> Result<PathBuf> {
+pub async fn handle(lang: String, code: Option<String>, path: Option<String>) -> Result<String> {
+	let source = match code {
+		Some(code) => code.clone(),
+		None => {
+			if let Some(path) = path {
+				std::fs::read_to_string(&path).map_err(|e| anyhow::anyhow!("Failed to read file '{}': {}", path, e))?
+			} else {
+				return Err(anyhow::anyhow!("No source code provided"));
+			}
+		}
+	};
+
+	let result = analyze(&lang, &source).await?;
+	Ok(serde_json::to_string(&result)?)
+}
+
+fn grammar_cache_dir() -> Result<PathBuf> {
 	let exe_dir = env::current_exe()
 		.context("Failed to get current executable path")?
 		.parent()
@@ -20,7 +36,7 @@ pub fn grammar_cache_dir() -> Result<PathBuf> {
 	Ok(path)
 }
 
-pub async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
+async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
 	let name = format!("tree-sitter-{}", lang);
 	let url = format!("{}/{}/{}/{}.wasm", PROVIDER, name, SUB_URL, name);
 
@@ -28,7 +44,7 @@ pub async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
 	let wasm_path = cache_dir.join(format!("{}.wasm", lang));
 
 	if !wasm_path.exists() {
-		println!("[kitsuned] downloading wasm for '{}'", lang);
+		println!("downloading wasm for '{}'", lang);
 		let bytes = Client::new()
 			.get(url)
 			.send()
@@ -44,7 +60,7 @@ pub async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
 }
 
 
-pub async fn analyze_ast(lang: &str, code: &str) -> Result<serde_json::Value> {
+async fn analyze(lang: &str, code: &str) -> Result<serde_json::Value> {
 
 	let engine = Engine::default();
 	let mut store = WasmStore::new(&engine).unwrap();

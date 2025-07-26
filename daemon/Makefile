@@ -4,22 +4,28 @@ MAKEFLAGS += --no-print-directory
 BIN = kitsuned
 OUT := ../bin/$(BIN)
 
-RELEASE_FLAGS = -s -w
-DEBUG_FLAGS = -N -l
+RELEASE_FLAGS = -Zlocation-detail=none
 
 help: # Show this help
 	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done
 
 release:
-	@cargo build --release
+	@killall kitsuned || true
+	@RUSTFLAGS="$(RELEASE_FLAGS)" cargo +nightly build --release
 	@mkdir -p ../bin
+	@upx --best --lzma ./bin/release/$(BIN)
 	@cp ./bin/release/$(BIN) $(OUT)
 
 build: # builds the executeable
 	@echo "bridge build"
 
 launch: # [args] -> builds and runs the BIN
-	@echo "bridge launch"
+	@killall kitsuned || true
+	@RUSTFLAGS="$(RELEASE_FLAGS)" cargo +nightly build --release
+	@mkdir -p ../bin
+	@upx --best --lzma ./bin/release/$(BIN)
+	@cp ./bin/release/$(BIN) $(OUT)
+	@$(OUT)
 
 run: # [args] runs the BIN via go run
 	@cargo run --release
@@ -34,4 +40,5 @@ install: # installs go and dependencies
 	@. "$(HOME)/.cargo/env"
 
 test:
-	@echo '{"lang":"go","job":"ast","path":"/mnt/d/dev/kitsune/editor/src/buffer.go"}' | socat - UNIX-CONNECT:/tmp/kitd.sock
+	@echo '{"Highlight":{"lang":"go","path":"/mnt/d/dev/kitsune/editor/src/version.go"}}' | socat - UNIX-CONNECT:/tmp/kitsuned.sock
+	@echo '{"Connect":{"user":"feb"}}' | socat - UNIX-CONNECT:/tmp/kitsuned.sock

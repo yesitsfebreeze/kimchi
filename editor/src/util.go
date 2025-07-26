@@ -14,6 +14,17 @@ func GetFormattedTime() string {
 	return now.Format("15:04")
 }
 
+func GetCurrentUser() string {
+	user := os.Getenv("USER")
+	if user == "" {
+		user = os.Getenv("USERNAME") // Windows compatibility
+	}
+	if user == "" {
+		return "unknown"
+	}
+	return user
+}
+
 func SnakeToCamel(input string) string {
 	var result = input
 	if strings.ContainsAny(input, " ") {

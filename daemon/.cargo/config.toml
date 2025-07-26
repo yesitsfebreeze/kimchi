@@ -1,2 +1,9 @@
 [build]
 target-dir = "bin"
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = [
+  "-C", "link-arg=-Wl,--hash-style=sysv"
+]
+linker = "clang"
+

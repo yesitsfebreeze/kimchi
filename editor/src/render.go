@@ -49,7 +49,6 @@ func StartRender() {
 		case *tcell.EventResize:
 			state.Screen.UpdateSize()
 		}
-
 	}
 }
 
