@@ -20,8 +20,8 @@ release:
 	@go mod tidy
 	@go build -C src -o ../$(OUT) -ldflags="$(RELEASE_FLAGS)"
 	@upx --best --lzma ./$(OUT)
+	@mkdir -p ../bin
 	@cp ./$(OUT) ../$(OUT)
-
 
 build: # builds the executeable
 	@make install -B

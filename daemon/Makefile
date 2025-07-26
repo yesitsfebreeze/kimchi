@@ -12,7 +12,8 @@ help: # Show this help
 
 release:
 	@cargo build --release
-	@cp target/release/$(BIN) $(OUT)
+	@mkdir -p ../bin
+	@cp ./bin/release/$(BIN) $(OUT)
 
 build: # builds the executeable
 	@echo "bridge build"
