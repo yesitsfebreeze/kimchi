@@ -21,7 +21,7 @@ def clone_nvim_treesitter_queries():
 
 NVIM_QUERY_DIR = clone_nvim_treesitter_queries()
 
-INSTALLED_LANGUAGES = []
+AVAILABLE_LANGUAGES = []
 
 def build_grammar(name, cfg):
 	target_dir = os.path.join(ROOT, "grammars", name)
@@ -48,7 +48,7 @@ def build_grammar(name, cfg):
 		else:
 			print(f"⚠️  No queries found for {name}, skipping.")
 
-		INSTALLED_LANGUAGES.append(name)
+		AVAILABLE_LANGUAGES.append(name)
 		print(f"✅ {name} → {target}")
 
 with open(os.path.join(SCRIPT_DIR, "grammars.jsonc")) as f:
@@ -61,7 +61,7 @@ for name, cfg in config.items():
 	except Exception as e:
 		print(f"❌ Failed to build {name}: {e}")
 
-installed_path = os.path.join(ROOT, "grammars", "installed.json")
-with open(installed_path, "w") as f:
-	json.dump(INSTALLED_LANGUAGES, f, indent=2)
-	print(f"\n📝 Installed languages written to {installed_path}")
+available_path = os.path.join(ROOT, "grammars", "available.json")
+with open(available_path, "w") as f:
+	json.dump(AVAILABLE_LANGUAGES, f, indent=2)
+	print(f"\n📝 Available languages written to {available_path}")
