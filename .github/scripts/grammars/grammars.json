@@ -1,0 +1,8 @@
+{
+  "agda": {
+    "repo": "https://github.com/tree-sitter/tree-sitter-agda"
+  },
+  "ocaml": {
+    "repo": "https://github.com/tree-sitter/tree-sitter-ocaml"
+  }
+}

@@ -28,8 +28,7 @@ jobs:
           version: latest
 
       - name: Build grammars
-        run: |
-          bash ./grammars/scripts/grammars.sh
+        run: py ./.github/scripts/grammars/build.py
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
