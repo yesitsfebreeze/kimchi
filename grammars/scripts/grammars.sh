@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 echo "Building grammars..."
+mkdir -p /tmp/grammars
+cd /tmp/grammars
+git clone https://github.com/tree-sitter/tree-sitter-agda agda
+cd agda
+tree-sitter generate ./grammar.js
+tree-sitter build --wasm
 
 # set -euo pipefail
 
@@ -17,39 +23,39 @@ echo "Building grammars..."
 
 # LANGUAGES=()
 
-REPOS=(
-	"agda|https://github.com/tree-sitter/tree-sitter-agda"
-	"bash|https://github.com/tree-sitter/tree-sitter-bash"
-	"c|https://github.com/tree-sitter/tree-sitter-c"
-	"cpp|https://github.com/tree-sitter/tree-sitter-cpp"
-	"css|https://github.com/tree-sitter/tree-sitter-css"
-	"go|https://github.com/tree-sitter/tree-sitter-go"
-	"haskell|https://github.com/tree-sitter/tree-sitter-haskell"
-	"html|https://github.com/tree-sitter/tree-sitter-html"
-	"java|https://github.com/tree-sitter/tree-sitter-java"
-	"javascript|https://github.com/tree-sitter/tree-sitter-javascript"
-	"jsdoc|https://github.com/tree-sitter/tree-sitter-jsdoc"
-	"julia|https://github.com/tree-sitter/tree-sitter-julia"
-	"ocaml|https://github.com/tree-sitter/tree-sitter-ocaml"
-	"php|https://github.com/tree-sitter/tree-sitter-php"
-	"python|https://github.com/tree-sitter/tree-sitter-python"
-	"ql|https://github.com/tree-sitter/tree-sitter-ql"
-	"regex|https://github.com/tree-sitter/tree-sitter-regex"
-	"ruby|https://github.com/tree-sitter/tree-sitter-ruby"
-	"rust|https://github.com/tree-sitter/tree-sitter-rust"
-	"scala|https://github.com/tree-sitter/tree-sitter-scala"
-	"typescript|https://github.com/tree-sitter/tree-sitter-typescript"
-	"verilog|https://github.com/tree-sitter/tree-sitter-verilog"
-	"yaml|https://github.com/ikatyang/tree-sitter-yaml"
-)
+# REPOS=(
+# 	"agda|https://github.com/tree-sitter/tree-sitter-agda"
+# 	"bash|https://github.com/tree-sitter/tree-sitter-bash"
+# 	"c|https://github.com/tree-sitter/tree-sitter-c"
+# 	"cpp|https://github.com/tree-sitter/tree-sitter-cpp"
+# 	"css|https://github.com/tree-sitter/tree-sitter-css"
+# 	"go|https://github.com/tree-sitter/tree-sitter-go"
+# 	"haskell|https://github.com/tree-sitter/tree-sitter-haskell"
+# 	"html|https://github.com/tree-sitter/tree-sitter-html"
+# 	"java|https://github.com/tree-sitter/tree-sitter-java"
+# 	"javascript|https://github.com/tree-sitter/tree-sitter-javascript"
+# 	"jsdoc|https://github.com/tree-sitter/tree-sitter-jsdoc"
+# 	"julia|https://github.com/tree-sitter/tree-sitter-julia"
+# 	"ocaml|https://github.com/tree-sitter/tree-sitter-ocaml"
+# 	"php|https://github.com/tree-sitter/tree-sitter-php"
+# 	"python|https://github.com/tree-sitter/tree-sitter-python"
+# 	"ql|https://github.com/tree-sitter/tree-sitter-ql"
+# 	"regex|https://github.com/tree-sitter/tree-sitter-regex"
+# 	"ruby|https://github.com/tree-sitter/tree-sitter-ruby"
+# 	"rust|https://github.com/tree-sitter/tree-sitter-rust"
+# 	"scala|https://github.com/tree-sitter/tree-sitter-scala"
+# 	"typescript|https://github.com/tree-sitter/tree-sitter-typescript"
+# 	"verilog|https://github.com/tree-sitter/tree-sitter-verilog"
+# 	"yaml|https://github.com/ikatyang/tree-sitter-yaml"
+# )
 
 
-mkrdir -p /tmp/grammars
-cd /tmp/grammars
-git clone https://github.com/tree-sitter/tree-sitter-agda agda
-cd agda
-tree-sitter generate ./grammar.js
-tree-sitter build --wasm
+# mkrdir -p /tmp/grammars
+# cd /tmp/grammars
+# git clone https://github.com/tree-sitter/tree-sitter-agda agda
+# cd agda
+# tree-sitter generate ./grammar.js
+# tree-sitter build --wasm
 
 # for dir in nvim-treesitter/queries/*; do
 # 	if [ -d "$dir" ]; then
