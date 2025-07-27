@@ -10,7 +10,14 @@
   },
   "css": {
     "repo": "https://github.com/tree-sitter/tree-sitter-css"
+  },
+  "go": {
+    "repo": "https://github.com/tree-sitter/tree-sitter-go"
+  },
+  "python": {
+    "repo": "https://github.com/tree-sitter/tree-sitter-python"
   }
+
   // "cpp": {
   //   "repo": "https://github.com/tree-sitter/tree-sitter-cpp"
   // },
@@ -21,11 +28,7 @@
 
 // # REPOS=(
 // # 	"agda|https://github.com/tree-sitter/tree-sitter-agda"
-// # 	"bash|https://github.com/tree-sitter/tree-sitter-bash"
-// # 	"c|https://github.com/tree-sitter/tree-sitter-c"
 // # 	"cpp|https://github.com/tree-sitter/tree-sitter-cpp"
-// # 	"css|https://github.com/tree-sitter/tree-sitter-css"
-// # 	"go|https://github.com/tree-sitter/tree-sitter-go"
 // # 	"haskell|https://github.com/tree-sitter/tree-sitter-haskell"
 // # 	"html|https://github.com/tree-sitter/tree-sitter-html"
 // # 	"java|https://github.com/tree-sitter/tree-sitter-java"
