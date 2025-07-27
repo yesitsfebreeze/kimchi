@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 echo "Building grammars..."
 
-mkdir -p ./grammars
-
 mkdir -p ./tmp
+
 cd ./tmp
 git clone https://github.com/tree-sitter/tree-sitter-agda agda
-cd ./tmp/agda
+cd ./agda
 tree-sitter generate grammar.js
 tree-sitter build --wasm
 cp ./tree-sitter-agda.wasm ../../grammars/agda.wasm
