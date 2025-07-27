@@ -28,7 +28,7 @@ def get_git_repo_url():
 		print("⚠️  Could not determine git remote URL, falling back to hardcoded path")
 		return "https://github.com/yesitsfebreeze/kitsune"
 	
-REPO_URL = ""
+REPO_URL = get_git_repo_url()
 
 def run(cmd, cwd):
 	print(f"→ {cmd}")
