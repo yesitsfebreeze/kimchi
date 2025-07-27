@@ -7,6 +7,10 @@ import commentjson
 ROOT = os.getcwd()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def run(cmd, cwd):
+	print(f"→ {cmd}")
+	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
+
 def clone_nvim_treesitter_queries():
 	tmp = tempfile.mkdtemp()
 	nvim_repo = os.path.join(tmp, "nvim-treesitter")
@@ -15,10 +19,6 @@ def clone_nvim_treesitter_queries():
 	return os.path.join(nvim_repo, "queries")
 
 NVIM_QUERY_DIR = clone_nvim_treesitter_queries()
-
-def run(cmd, cwd):
-	print(f"→ {cmd}")
-	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
 
 def build_grammar(name, cfg):
 	target_dir = os.path.join(ROOT, "grammars", name)
