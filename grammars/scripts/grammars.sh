@@ -8,8 +8,10 @@ git clone https://github.com/tree-sitter/tree-sitter-agda agda
 cd ./agda
 tree-sitter generate grammar.js
 tree-sitter build --wasm
-cp ./tree-sitter-agda.wasm ../../grammars/agda.wasm
 cd ../..
+
+mkdir -p ./grammars/agda
+cp ./tmp/agda/tree-sitter-agda.wasm ./grammars/agda/agda.wasm
 
 
 rm -rf ./tmp
