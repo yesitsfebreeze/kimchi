@@ -8,6 +8,28 @@ import commentjson
 ROOT = os.getcwd()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+
+def get_git_repo_url():
+	try:
+		url = subprocess.check_output(
+			["git", "config", "--get", "remote.origin.url"],
+			cwd=ROOT,
+			stderr=subprocess.DEVNULL
+		).decode("utf-8").strip()
+		# Convert SSH to HTTPS if needed
+		if url.startswith("git@"):
+			parts = url.split(":")
+			if len(parts) == 2:
+				url = f"https://github.com/{parts[1].replace('.git', '')}"
+		elif url.endswith(".git"):
+			url = url[:-4]
+		return url
+	except Exception:
+		print("⚠️  Could not determine git remote URL, falling back to hardcoded path")
+		return "https://github.com/yesitsfebreeze/kitsune"
+	
+REPO_URL = ""
+
 def run(cmd, cwd):
 	print(f"→ {cmd}")
 	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
@@ -41,14 +63,24 @@ def build_grammar(name, cfg):
 		shutil.copy(grammar_file, os.path.join(target_dir, f"{name}.wasm"))
 		
 		query_src = os.path.join(NVIM_QUERY_DIR, name)
+
+		files = [
+			f"{name}.wasm"
+		]
 		if os.path.isdir(query_src):
 			print(f"📦 Found queries for {name}, copying...")
 			query_dst = os.path.join(target_dir, "queries")
 			shutil.copytree(query_src, query_dst, dirs_exist_ok=True)
+			files = sorted(os.listdir(query_dst))
 		else:
 			print(f"⚠️  No queries found for {name}, skipping.")
 
-		AVAILABLE_LANGUAGES.append(name)
+
+		AVAILABLE_LANGUAGES.append({
+			"name": name,
+			"files": files
+		})
+		
 		print(f"✅ {name} → {target}")
 
 with open(os.path.join(SCRIPT_DIR, "grammars.jsonc")) as f:
@@ -63,5 +95,9 @@ for name, cfg in config.items():
 
 available_path = os.path.join(ROOT, "grammars", "available.json")
 with open(available_path, "w") as f:
-	json.dump(AVAILABLE_LANGUAGES, f, indent=2)
+	data = {
+		"url": f"{REPO_URL}/raw/refs/heads/master/grammars/",
+		"languages": AVAILABLE_LANGUAGES,
+	}
+	json.dump(data, f, indent=2)
 	print(f"\n📝 Available languages written to {available_path}")
