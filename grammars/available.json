@@ -1,5 +1,5 @@
 {
-  "url": "/raw/refs/heads/master/grammars/",
+  "url": "https://github.com/yesitsfebreeze/kitsune/raw/refs/heads/master/grammars/",
   "languages": [
     {
       "name": "agda",
