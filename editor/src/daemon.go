@@ -1,28 +1,36 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+	"time"
 )
 
-const DAEMON_SOCKET_PATH = "/tmp/kitsuned.sock"
+const DAEMON_NAME = "kitsuned"
+const DAEMON_MAX_RETRIES = 32
+const DAEMON_RETRY_INTERVAL = 25 * time.Millisecond
 
 type DaemonCmd int
 
 const (
 	DaemonConnect DaemonCmd = iota
 	DaemonDisconnect
-	DaemonShutdown
+	DaemonInstallLanguage
 	DaemonHighlight
 )
 
 var DaemonCmdEnum = NewEnumMap(map[string]DaemonCmd{
-	"Connect":    DaemonConnect,
-	"Disconnect": DaemonDisconnect,
-	"Highlight":  DaemonHighlight,
+	"Connect":         DaemonConnect,
+	"Disconnect":      DaemonDisconnect,
+	"InstallLanguage": DaemonInstallLanguage,
+	"Highlight":       DaemonHighlight,
 })
 
 type DaemonData struct {
@@ -34,29 +42,72 @@ type DaemonData struct {
 	RegionEnd   int    `json:"region_end,omitempty"`
 }
 
-func DaemonRunning() bool {
-	conn, err := net.Dial("unix", DAEMON_SOCKET_PATH)
-	if err != nil {
-		return false
-	}
-	conn.Close()
+var DaemonQueue []DaemonMessage
+var DaemonQueueLock = sync.Mutex{}
 
-	return true
+type DaemonMessage struct {
+	Cmd      DaemonCmd
+	Data     DaemonData
+	Callback func(string, error)
+}
+
+func EnsureDaemonConnection() {
+	var path string = "/tmp/" + DAEMON_NAME + ".sock"
+
+	connect := func() bool {
+		if _, err := os.Stat(path); err != nil {
+			return false
+		}
+		conn, err := net.Dial("unix", path)
+		if err != nil {
+			LogErr("Could not connect to daemon:", err)
+			return false
+		}
+		state.Daemon = &conn
+		Log("Connected to daemon.")
+		FlushDaemonQueue()
+		return true
+	}
+
+	connected := connect()
+
+	go func() {
+		for range DAEMON_MAX_RETRIES {
+			if connected {
+				return
+			}
+			connected = connect()
+			if connected {
+				return
+			}
+			time.Sleep(DAEMON_RETRY_INTERVAL)
+		}
+		if !connected {
+			LogErr("Failed to connect to daemon after multiple attempts.")
+			os.Exit(1)
+		}
+	}()
+}
+
+func GetDaemonBinPath() (string, error) {
+	exe_path, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	daemon_bin_path := filepath.Join(filepath.Dir(exe_path), DAEMON_NAME)
+	if !FileExists(daemon_bin_path) {
+		return "", fmt.Errorf("daemon binary not found at %s", daemon_bin_path)
+	}
+	return daemon_bin_path, nil
 }
 
 func DaemonStart() error {
-	exe_path, err := os.Executable()
+	daemon_bin, err := GetDaemonBinPath()
 	if err != nil {
 		return err
 	}
-	daemon_path := filepath.Join(filepath.Dir(exe_path), "kitsuned")
 
-	LogF("Starting daemon at %s", daemon_path)
-	if !FileExists(daemon_path) {
-		return os.ErrNotExist
-	}
-
-	cmd := exec.Command(daemon_path)
+	cmd := exec.Command(daemon_bin)
 
 	// TODO impl forward to log
 	// cmd.Stdout = os.Stdout
@@ -66,63 +117,124 @@ func DaemonStart() error {
 	}
 
 	LogF("Daemon started with PID %d", cmd.Process.Pid)
-	LogF("Daemon is running: %v", DaemonRunning())
+	EnsureDaemonConnection()
 
 	return nil
 }
 
-func InitDaemon() {
-	if !DaemonRunning() {
-		if err := DaemonStart(); err != nil {
-			LogF("Failed to start daemon: %v", err)
-			os.Exit(1)
+func ConnectToDaemon() {
+	DaemonSend(DaemonConnect, DaemonData{User: GetCurrentUser()}, func(res string, err error) {
+		if err != nil {
+			LogErr("Failed to connect to daemon:", err)
+			return
 		}
-	} else {
-		Log("Daemon is already running.")
-	}
-	DaemonSend(DaemonConnect, DaemonData{User: GetCurrentUser()})
+		Log("Connected to daemon.")
+
+		for _, lang := range state.Config.DefaultLanguages {
+			DaemonSend(DaemonInstallLanguage, DaemonData{Lang: lang}, func(res string, err error) {
+				if err != nil {
+					LogErr("Failed to install language:", err)
+					return
+				}
+				Log("Installed language:", lang)
+			})
+		}
+	})
 }
 
-func DaemonStop() {
-	if !DaemonRunning() {
-		Log("No daemon is running.")
+func InitDaemon() {
+	EnsureDaemonConnection()
+	if state.Daemon != nil {
+		Log("Daemon is already running.")
+		ConnectToDaemon()
 		return
 	}
-	DaemonSend(DaemonDisconnect, DaemonData{User: GetCurrentUser()})
+	DaemonStart()
+	ConnectToDaemon()
 }
 
-func DaemonSend(cmd DaemonCmd, data DaemonData) (string, error) {
-	conn, err := net.Dial("unix", DAEMON_SOCKET_PATH)
-	if err != nil {
-		return "", err
+func DisconnectFromDaemon() {
+	DaemonSend(DaemonDisconnect, DaemonData{User: GetCurrentUser()}, func(res string, err error) {
+		if err != nil {
+			LogErr("Failed to disconnect from daemon:", err)
+			return
+		}
+		Log("Disconnected from daemon.")
+	})
+}
+
+func DaemonSend(cmd DaemonCmd, data DaemonData, f func(string, error)) {
+	if state.Daemon == nil {
+		DaemonQueueLock.Lock()
+		defer DaemonQueueLock.Unlock()
+		DaemonQueue = append(DaemonQueue, DaemonMessage{Cmd: cmd, Data: data, Callback: f})
+		Log("Daemon not ready. Queued command:", DaemonCmdEnum.String(cmd))
+		return
 	}
-	defer conn.Close()
 
 	job := DaemonCmdEnum.String(cmd)
-	wrapped := map[string]interface{}{
+	wrapped := map[string]any{
 		job: data,
 	}
 	send_data, err := json.Marshal(wrapped)
 
 	if err != nil {
-		return "", err
+		f("", err)
+		return
 	}
 
+	conn := *state.Daemon
 	if _, err := conn.Write(send_data); err != nil {
-		return "", err
+		f("", err)
+		return
 	}
 
 	// write newline because of `BufReader::read_line()`
 	if _, err := conn.Write([]byte("\n")); err != nil {
-		return "", err
+		f("", err)
+		return
 	}
 
-	// read response
-	buf := make([]byte, 4096) // increase if you expect large output
-	n, err := conn.Read(buf)
-	if err != nil {
-		return "", err
+	if res, err := DaemonReadMessage(); err == nil {
+		f(res, nil)
+	}
+}
+
+func DaemonReadMessage() (string, error) {
+	conn := *state.Daemon
+	// Read the 4-byte big-endian length prefix
+	lenBuf := make([]byte, 4)
+	if _, err := io.ReadFull(conn, lenBuf); err != nil {
+		return "", fmt.Errorf("failed to read length: %w", err)
 	}
 
-	return string(buf[:n]), nil
+	length := binary.BigEndian.Uint32(lenBuf)
+	if length > 10*1024*1024 {
+		return "", fmt.Errorf("message too large: %d bytes", length) // max 10MB
+	}
+
+	// Read the message body
+	msgBuf := make([]byte, length)
+	if _, err := io.ReadFull(conn, msgBuf); err != nil {
+		return "", fmt.Errorf("failed to read message body: %w", err)
+	}
+
+	return string(msgBuf), nil
+}
+
+func FlushDaemonQueue() {
+	DaemonQueueLock.Lock()
+	defer DaemonQueueLock.Unlock()
+
+	if state.Daemon == nil {
+		LogErr("Cannot flush daemon queue — still not connected.")
+		return
+	}
+
+	for _, msg := range DaemonQueue {
+		LogF("Flushing queued command: %s", DaemonCmdEnum.String(msg.Cmd))
+		DaemonSend(msg.Cmd, msg.Data, msg.Callback)
+	}
+
+	DaemonQueue = nil // clear
 }

@@ -14,6 +14,7 @@ tower-lsp = "0.20"
 tree-sitter = {version = "0.25", features = ["wasm"]}
 tree-sitter-rust = "0.24.0"
 anyhow = "1"
+sysinfo = "0.36.1"
 
 [profile.release]
 opt-level = "z"

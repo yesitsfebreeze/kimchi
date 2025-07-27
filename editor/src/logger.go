@@ -14,7 +14,7 @@ import (
 var tempLogLines []string
 
 const LOG_BUFFER_NAME = "KITLOG"
-const MAX_LOG_LINES = 10
+const MAX_LOG_LINES = 256
 
 func InitLogBuffer() *Buffer {
 	buf := &Buffer{

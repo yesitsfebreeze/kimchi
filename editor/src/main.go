@@ -9,7 +9,7 @@ import (
 const DEBUG = true
 
 func Shutdown() {
-	DaemonStop()
+	DisconnectFromDaemon()
 	ResetScreen()
 	CloseLogFile()
 	if r := recover(); r != nil {
@@ -28,16 +28,12 @@ func main() {
 	InitState()
 	InitScreen()
 	InitDaemon()
-	Init()
-	state.Times.BootTime.Log("Boot completed in %s")
-	StartRender()
-}
-
-func Init() {
 	InitStatusBar()
 	InitPanes()
 	InitPrompt()
 	OpenInputFile()
+	state.Times.BootTime.Log("Boot completed in %s")
+	StartRender()
 }
 
 func Update() {

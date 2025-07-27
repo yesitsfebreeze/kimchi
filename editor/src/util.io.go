@@ -64,3 +64,38 @@ func SaveBuffer(args ...any) {
 	// buf.Modified = false
 	// Log("Saved file: ", state.Startfile)
 }
+
+func OpenInputFile() {
+	if !IsFile(state.Args.Path) {
+		return
+	}
+
+	if ctx, ok := OpenFile(state.Args.Path); ok {
+		if state.Panes.One == nil || state.Panes.Two == nil {
+			InitPanes()
+		}
+
+		// state.Panes.Layout = PaneLayoutVertical
+
+		// TODO: this should be the state
+		state.Panes.One.Area.SetContext(ctx)
+		state.Panes.One.Visible = true
+		state.Panes.One.Area.Focus()
+
+		state.Panes.Two.Area.SetContext(ctx)
+		state.Panes.Two.Visible = true
+		state.Panes.Two.Area.Focus()
+
+		DaemonSend(DaemonHighlight, DaemonData{
+			Lang: "go",
+			Code: ctx.Buffer.ToString(),
+		}, func(res string, err error) {
+			if err != nil {
+				LogErr("Failed to highlight code:", err)
+				return
+			}
+			LogF("Daemon response: %s", res)
+		})
+
+	}
+}

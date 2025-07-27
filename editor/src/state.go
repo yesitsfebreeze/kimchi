@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
@@ -21,6 +22,7 @@ type State struct {
 	Quit             bool
 	Delta            int64
 	Args             Args
+	Daemon           *net.Conn
 	LogFile          *os.File
 	InputFile        string
 	Project          string

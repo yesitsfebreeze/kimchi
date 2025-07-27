@@ -248,10 +248,21 @@ func (s *Screen) Reset() {
 	if s.Obj == nil {
 		return // nothing to reset
 	}
-	term.Restore(int(os.Stdin.Fd()), s.OldXTerm)
-	fmt.Fprint(os.Stderr, "\033[?25h\033[0m\n")
-	os.Setenv("TERM", s.OldTerm)
 
+	// Restore terminal state
+	if s.OldXTerm != nil {
+		term.Restore(int(os.Stdin.Fd()), s.OldXTerm)
+	}
+
+	// Ensure cursor is visible and colors are reset
+	fmt.Fprint(os.Stderr, "\033[?25h\033[0m\n")
+
+	// Restore original TERM environment variable
+	if s.ModifiedTerm {
+		os.Setenv("TERM", s.OldTerm)
+	}
+
+	// Clean up screen object
 	s.Obj.DisableMouse()
 	s.Obj.Fini()
 }

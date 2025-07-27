@@ -1,4 +1,4 @@
-.PHONY: help build run clean install
+.PHONY: help grammars build run clean install
 
 MAKEFLAGS += --no-print-directory
 BIN = kitsuned
@@ -18,6 +18,9 @@ release:
 
 build: # builds the executeable
 	@echo "bridge build"
+
+grammars:
+	@./scripts/grammars.sh
 
 launch: # [args] -> builds and runs the BIN
 	@killall kitsuned || true
@@ -40,5 +43,5 @@ install: # installs go and dependencies
 	@. "$(HOME)/.cargo/env"
 
 test:
-	@echo '{"Highlight":{"lang":"go","path":"/mnt/d/dev/kitsune/editor/src/version.go"}}' | socat - UNIX-CONNECT:/tmp/kitsuned.sock
+	@echo '{"Highlight":{"lang":"cpp","path":"/mnt/d/dev/kitsune/editor/src/index.js"}}' | socat - UNIX-CONNECT:/tmp/kitsuned.sock
 	@echo '{"Connect":{"user":"feb"}}' | socat - UNIX-CONNECT:/tmp/kitsuned.sock

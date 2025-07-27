@@ -10,6 +10,7 @@ type Config struct {
 	SurroundingLines int            `help:"cfg('surrounding_lines', number)"`
 	PromptPosition   PromptPosition `help:"cfg('prompt position', 'top'|'center'|'bottom')"`
 	UnfocusedDarken  float32        `help:"cfg('unfocused_darken', number)"`
+	DefaultLanguages []string       `help:"cfg('default_languages', [string])"`
 	CursorTrail      CursorTrailConfig
 	Statusbar        StatusbarConfig
 	Indent           IndentConfig

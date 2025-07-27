@@ -1,11 +1,9 @@
 use anyhow::{Result, Context};
 use tree_sitter::{wasmtime::Engine, Parser, WasmStore, Node};
 use serde_json::{json, Map, Value};
-use std::{env, fs, path::{PathBuf}};
-use reqwest::Client;
+use std::fs;
 
-const PROVIDER: &str = "https://github.com/tree-sitter";
-const SUB_URL: &str = "releases/latest/download";
+use crate::jobs::language;
 
 pub async fn handle(lang: String, code: Option<String>, path: Option<String>) -> Result<String> {
 	let source = match code {
@@ -23,52 +21,17 @@ pub async fn handle(lang: String, code: Option<String>, path: Option<String>) ->
 	Ok(serde_json::to_string(&result)?)
 }
 
-fn grammar_cache_dir() -> Result<PathBuf> {
-	let exe_dir = env::current_exe()
-		.context("Failed to get current executable path")?
-		.parent()
-		.context("Failed to get parent directory")?
-		.to_path_buf();
-
-	let path = exe_dir.join("grammars");
-	std::fs::create_dir_all(&path).context("Failed to create grammar cache directory")?;
-
-	Ok(path)
-}
-
-async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
-	let name = format!("tree-sitter-{}", lang);
-	let url = format!("{}/{}/{}/{}.wasm", PROVIDER, name, SUB_URL, name);
-
-	let cache_dir = grammar_cache_dir().expect("Failed to get grammar cache directory");
-	let wasm_path = cache_dir.join(format!("{}.wasm", lang));
-
-	if !wasm_path.exists() {
-		println!("downloading wasm for '{}'", lang);
-		let bytes = Client::new()
-			.get(url)
-			.send()
-			.await
-			.context("failed to download grammar wasm")?
-			.bytes()
-			.await
-			.context("failed to read wasm bytes")?;
-		fs::write(&wasm_path, &bytes)?;
-	}
-
-	Ok(wasm_path)
-}
-
-
 async fn analyze(lang: &str, code: &str) -> Result<serde_json::Value> {
 
 	let engine = Engine::default();
 	let mut store = WasmStore::new(&engine).unwrap();
 
-	let wasm_path = &ensure_wasm(lang).await?;
+	language::install(lang.to_string()).await?;
+	let wasm_path = language::get_wasm_path(lang)
+		.with_context(|| format!("Failed to get wasm path for language: {}", lang))?;
 
 	println!("Loading WASM for language: {}", wasm_path.display());
-	let wasm_bytes = fs::read(wasm_path)
+	let wasm_bytes = fs::read(&wasm_path)
 		.with_context(|| format!("Failed to read wasm grammar at {}", &wasm_path.display()))?;
 
 	let wasm_lang = store

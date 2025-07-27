@@ -1,18 +1,33 @@
 const SOCKET_PATH: &str = "/tmp/kitsuned.sock";
+const CLIENT_CHECK_INTERVAL: u64 = 5; // seconds
 
 mod jobs;
+use crate::jobs::language;
 use crate::jobs::highlight;
 
-use std::{fs};
-use anyhow::Result;
-use tokio::net::{UnixListener, UnixStream};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use serde::{Serialize, Deserialize};
+use std::fs;
 use std::collections::HashSet;
 use std::sync::Arc;
-use tokio::sync::{Mutex, MutexGuard};
+use anyhow::Result;
+use serde::Serialize;
+use serde::Deserialize;
+use tokio::net::UnixListener;
+use tokio::net::UnixStream;
+use tokio::io::AsyncBufReadExt;
+use tokio::io::AsyncWriteExt;
+use tokio::io::BufReader;
+use tokio::sync::Mutex;
+use tokio::task;
+use tokio::time::interval;
+use tokio::time::Duration;
+use sysinfo::System;
+use sysinfo::ProcessesToUpdate;
 
 type SharedUsers = Arc<Mutex<HashSet<String>>>;
+
+
+ // if true, will check for client processes and shutdown if none are found
+const USE_SHUTDOWN_CHECK: bool = false;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -22,19 +37,20 @@ async fn main() -> Result<()> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Request {
-	Shutdown,
 	Connect {
 		user: String,
 	},
 	Disconnect {
 		user: String,
 	},
+	InstallLanguage {
+		lang: String,
+	},
 	Highlight {
 		lang: String,
 		code: Option<String>,
 		path: Option<String>,
 	},
-
 	// TODO: maybe need rename/refactor/goto/ etc requests for lsp
 	// Lsp {
 	//	 lang: String,
@@ -52,10 +68,6 @@ async fn request(line: &str, users: &SharedUsers) -> Result<String> {
 	};
 
 	match req {
-		Request::Shutdown => {
-			println!("Shutting down...");
-			std::process::exit(0);
-		},
 		Request::Connect { user } => {
 			let mut set = users.lock().await;
 			if !set.insert(user.clone()) {
@@ -63,14 +75,15 @@ async fn request(line: &str, users: &SharedUsers) -> Result<String> {
 			}
 			Ok(format!("You connected as: {}", user))
 		},
-
 		Request::Disconnect { user } => {
 			let mut set = users.lock().await;
 			if !set.remove(&user) {
 				return Err(anyhow::anyhow!("User '{}' was not connected", user));
 			}
-			shutdown(set);
 			Ok(format!("You disconnected as: {}", user))
+		},
+		Request::InstallLanguage { lang } => {
+			return language::install(lang).await;
 		},
 		Request::Highlight { lang, code, path } => {
 			return highlight::handle(lang, code, path).await;
@@ -84,6 +97,10 @@ async fn socket() -> Result<()> {
 	println!("Listening on {}, Ctrl+C to exit", SOCKET_PATH);
 
 	let users: SharedUsers = Arc::new(Mutex::new(HashSet::new()));
+
+	if USE_SHUTDOWN_CHECK {
+		check_for_processes();
+	}
 
 	loop {
 		let (stream, _) = listener.accept().await?;
@@ -100,11 +117,9 @@ async fn handle(stream: UnixStream, users: SharedUsers) {
 		match buf_reader.read_line(&mut buffer).await {
 			Ok(0) => break, // EOF
 			Ok(_n) => {
-				// println!("input: {}", buffer.trim());
 				match request(&buffer, &users).await {
-					Ok(response) => {
-						let _ = writer.write_all(response.as_bytes()).await;
-						let _ = writer.write_all(b"\n").await;
+					Ok(res) => {
+						let _ = response(&mut writer, &res).await;
 					}
 					Err(err) => {
 						let msg = format!("{{\"error\":\"{}\"}}\n", err);
@@ -123,10 +138,45 @@ async fn handle(stream: UnixStream, users: SharedUsers) {
 	}
 }
 
-fn shutdown(set: MutexGuard<'_, HashSet<String>>) {
-	if set.is_empty() {
-    println!("No users remaining. Shutting down.");
-    std::fs::remove_file(SOCKET_PATH).ok(); // cleanup
-    std::process::exit(0);
-	}
+async fn response<W: AsyncWriteExt + Unpin>(
+	writer: &mut W,
+	response: &str,
+) -> anyhow::Result<()> {
+	let bytes = response.as_bytes();
+	let size = bytes.len() as u32;
+
+	writer.write_all(&size.to_be_bytes()).await?;
+	writer.write_all(bytes).await?;
+
+	Ok(())
+}
+
+pub fn check_for_processes() {
+	task::spawn(async move {
+		let check_time = Duration::from_secs(CLIENT_CHECK_INTERVAL);
+		tokio::time::sleep(check_time).await;
+
+		let mut interval = interval(check_time);
+		loop {
+			interval.tick().await;
+
+			let mut system = System::new_all();
+			system.refresh_processes(ProcessesToUpdate::All, true);
+
+			let any_running = system.processes()
+				.values()
+				.any(|proc| {
+					let name = proc.name().to_str()
+						.map(|s| s.to_lowercase())
+						.unwrap_or_default();
+					name == "kitsune"
+				});
+
+			if !any_running {
+				println!("no client detected. shutting down.");
+				std::fs::remove_file(SOCKET_PATH).ok(); // cleanup
+				std::process::exit(0);
+			}
+		}
+	});
 }

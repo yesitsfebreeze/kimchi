@@ -286,6 +286,7 @@ func (a *Area) Draw() {
 		Right:  a.Padding.Right,
 	}
 
+	// If border is enabled, content is inset by 1 character
 	if a.BorderStyle != BorderNone {
 		pad.Top += 1
 		pad.Bottom += 1
@@ -296,11 +297,16 @@ func (a *Area) Draw() {
 	s.X = max(s.X, 1+pad.Left+pad.Right)
 	s.Y = max(s.Y, 1+pad.Top+pad.Bottom)
 
-	for y := 0; y < (s.Y - pad.Top - pad.Bottom); y++ {
-		for x := 0; x < (s.X - pad.Left - pad.Right); x++ {
+	// Draw content area (inset by border if present)
+	contentWidth := s.X - pad.Left - pad.Right
+	contentHeight := s.Y - pad.Top - pad.Bottom
+
+	for y := 0; y < contentHeight; y++ {
+		for x := 0; x < contentWidth; x++ {
 			charCoord := Vec2{X: x, Y: y}
 			char := a.GetCharAtScrollOffset(charCoord)
 
+			// Calculate screen coordinates with border offset
 			coord := Vec2.Add(p, Vec2{X: x, Y: y})
 			coord = coord.Add(Vec2{X: pad.Left, Y: pad.Top})
 			scr.Cell(coord, ' ', a.Style.Darken(darken))
@@ -310,13 +316,11 @@ func (a *Area) Draw() {
 		}
 	}
 
-	{ // border
-		if a.BorderStyle == BorderNone {
-			return
-		}
+	// Draw border if enabled
+	if a.BorderStyle != BorderNone {
 		border := BorderStyles[a.BorderStyle]
 		if len(border) < 7 {
-			LogErr("Panel style must have 7 characters")
+			LogErr("Border style must have 7 characters")
 			return
 		}
 		b := []rune(border)
@@ -324,24 +328,24 @@ func (a *Area) Draw() {
 		w, h := s.X, s.Y
 		x, y := p.X, p.Y
 
+		// Top and bottom borders
 		for i := 1; i < w-1; i++ {
-			scr.CellXY(x+i, y, b[2], a.Style)
-			scr.CellXY(x+i, y+h-1, b[2], a.Style)
+			scr.CellXY(x+i, y, b[2], a.Style)     // Top border
+			scr.CellXY(x+i, y+h-1, b[2], a.Style) // Bottom border
 		}
 
-		// Sides
+		// Left and right borders
 		for j := 1; j < h-1; j++ {
-			scr.CellXY(x, y+j, b[0], a.Style)
-			scr.CellXY(x+w-1, y+j, b[0], a.Style)
+			scr.CellXY(x, y+j, b[0], a.Style)     // Left border
+			scr.CellXY(x+w-1, y+j, b[0], a.Style) // Right border
 		}
 
-		// Corners
-		scr.CellXY(x, y, b[1], a.Style)
-		scr.CellXY(x+w-1, y, b[3], a.Style)
-		scr.CellXY(x, y+h-1, b[4], a.Style)
-		scr.CellXY(x+w-1, y+h-1, b[6], a.Style)
+		// Corner characters
+		scr.CellXY(x, y, b[1], a.Style)         // Top-left corner
+		scr.CellXY(x+w-1, y, b[3], a.Style)     // Top-right corner
+		scr.CellXY(x, y+h-1, b[4], a.Style)     // Bottom-left corner
+		scr.CellXY(x+w-1, y+h-1, b[6], a.Style) // Bottom-right corner
 	}
-
 }
 
 // func (area *Area) AddCursor(x, y int) {
