@@ -16,7 +16,13 @@
   },
   "python": {
     "repo": "https://github.com/tree-sitter/tree-sitter-python"
+  },
+  "zig": {
+    "repo": "https://github.com/tree-sitter-grammars/tree-sitter-zig"
   }
+  // "markdown": {
+  //   "repo": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+  // }
 
   // "cpp": {
   //   "repo": "https://github.com/tree-sitter/tree-sitter-cpp"
