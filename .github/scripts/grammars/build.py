@@ -1,4 +1,7 @@
-import json # , os, subprocess, tempfile, shutil
+import json , os # , subprocess, tempfile, shutil
+
+
+print(os.getcwd())
 
 # def run(cmd, cwd):
 # 	print(f"→ {cmd}")
