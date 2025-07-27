@@ -1,5 +1,7 @@
 import json , os # , subprocess, tempfile, shutil
 
+ROOT = os.getcwd()
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 print(os.getcwd())
 
@@ -27,7 +29,7 @@ print(os.getcwd())
 # 		shutil.copy(os.path.join(grammar_path, wasm_file), out_path)
 # 		print(f"✅ {name} → {out_path}")
 
-with open("grammars.json") as f:
+with open(os.path.join(SCRIPT_DIR, "grammars.json")) as f:
 	config = json.load(f)
 
 for name, cfg in config.items():
