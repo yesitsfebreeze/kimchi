@@ -4,57 +4,63 @@
     {
       "name": "agda",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "injections.scm"
+        "agda.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/injections.scm"
       ]
     },
     {
       "name": "c",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "indents.scm",
-        "injections.scm",
-        "locals.scm"
+        "c.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
       ]
     },
     {
       "name": "bash",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "injections.scm",
-        "locals.scm"
+        "bash.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
       ]
     },
     {
       "name": "css",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "indents.scm",
-        "injections.scm"
+        "css.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm"
       ]
     },
     {
       "name": "go",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "indents.scm",
-        "injections.scm",
-        "locals.scm"
+        "go.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
       ]
     },
     {
       "name": "python",
       "files": [
-        "folds.scm",
-        "highlights.scm",
-        "indents.scm",
-        "injections.scm",
-        "locals.scm"
+        "python.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
       ]
     }
   ]
