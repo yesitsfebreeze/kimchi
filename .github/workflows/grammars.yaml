@@ -11,33 +11,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout self
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
+      - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install tree-sitter-cli
+      - name: tree-sitter-cli
         run: npm install -g tree-sitter-cli
 
-      - name: Set up Emscripten
+      - name: Emscripten
         uses: mymindstorm/setup-emsdk@v12
         with:
           version: latest
       
-      - name: Set up Python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Build grammars
-        run: py ./.github/scripts/grammars/build.py
+        run: python ./.github/scripts/grammars/build.py
 
-      - name: Commit and push changes
+      - name: Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update compiled grammars"
+          commit_message: "Grammars Job"
           branch: master
           file_pattern: 'grammars/**'
