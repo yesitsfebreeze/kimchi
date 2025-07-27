@@ -71,7 +71,8 @@ def build_grammar(name, cfg):
 			print(f"📦 Found queries for {name}, copying...")
 			query_dst = os.path.join(target_dir, "queries")
 			shutil.copytree(query_src, query_dst, dirs_exist_ok=True)
-			files = sorted(os.listdir(query_dst))
+			for f in sorted(os.listdir(query_dst)):
+				files.append(os.path.join("queries", f))
 		else:
 			print(f"⚠️  No queries found for {name}, skipping.")
 
