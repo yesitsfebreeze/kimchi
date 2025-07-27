@@ -1,33 +1,31 @@
-import json , os # , subprocess, tempfile, shutil
+import json , os ,tempfile, subprocess, shutil
 
 ROOT = os.getcwd()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 print(os.getcwd())
 
-# def run(cmd, cwd):
-# 	print(f"→ {cmd}")
-# 	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
+def run(cmd, cwd):
+	print(f"→ {cmd}")
+	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
 
-# def build_grammar(name, cfg):
-# 	repo_url = cfg["repo"]
-# 	grammar_dir = cfg.get("grammar_dir", ".")
-# 	build_cmds = cfg.get("build_cmds", ["tree-sitter generate", "tree-sitter build-wasm"])
+def build_grammar(name, cfg):
+	target_dir = os.path.join(ROOT, "grammars", name)
+	repo_url = cfg["repo"]
+	build = cfg.get("build", ["tree-sitter generate ./grammar.js", "tree-sitter build --wasm"])
 
-# 	with tempfile.TemporaryDirectory() as tmp:
-# 		print(f"🧬 Cloning {name}...")
-# 		clone_path = os.path.join(tmp, name)
-# 		run(f"git clone {repo_url} {name}", tmp)
-
-# 		grammar_path = os.path.join(clone_path, grammar_dir)
-# 		for cmd in build_cmds:
-# 			run(cmd, grammar_path)
-
-# 		wasm_file = next(f for f in os.listdir(grammar_path) if f.endswith(".wasm"))
-# 		out_path = os.path.join("out", f"{name}.wasm")
-# 		os.makedirs("out", exist_ok=True)
-# 		shutil.copy(os.path.join(grammar_path, wasm_file), out_path)
-# 		print(f"✅ {name} → {out_path}")
+	with tempfile.TemporaryDirectory() as tmp:
+		print(f"🧬 Cloning {name}...")
+		clone_path = os.path.join(tmp, name)
+		run(f"git clone {repo_url} {name}", tmp)
+		for cmd in build:
+			run(cmd, clone_path)
+		os.makedirs(target_dir, exist_ok=True)
+		wasm_file = "tree-sitter-" + name + ".wasm"
+		grammar_file = os.join(clone_path, wasm_file)
+		target = os.path.join(target_dir, f"{name}.wasm")
+		shutil.copy(grammar_file, os.path.join(target_dir, f"{name}.wasm"))
+		print(f"✅ {name} → {target}")
 
 with open(os.path.join(SCRIPT_DIR, "grammars.json")) as f:
 	config = json.load(f)
