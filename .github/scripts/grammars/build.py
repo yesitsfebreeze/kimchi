@@ -1,4 +1,8 @@
-import json , os ,tempfile, subprocess, shutil
+import os
+import tempfile
+import subprocess
+import shutil
+import commentjson
 
 ROOT = os.getcwd()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,15 +26,16 @@ def build_grammar(name, cfg):
 			run(cmd, clone_path)
 		os.makedirs(target_dir, exist_ok=True)
 		wasm_file = "tree-sitter-" + name + ".wasm"
-		grammar_file = os.join(clone_path, wasm_file)
+		grammar_file = os.path.join(clone_path, wasm_file)
 		target = os.path.join(target_dir, f"{name}.wasm")
 		shutil.copy(grammar_file, os.path.join(target_dir, f"{name}.wasm"))
 		print(f"✅ {name} → {target}")
 
 with open(os.path.join(SCRIPT_DIR, "grammars.json")) as f:
-	config = json.load(f)
+	config = commentjson.load(f)
 
 for name, cfg in config.items():
+	print(f"🔍 Building grammar: {name}")
 	try:
 		build_grammar(name, cfg)
 	except Exception as e:

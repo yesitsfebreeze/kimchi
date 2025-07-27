@@ -33,7 +33,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build grammars
-        run: python ./.github/scripts/grammars/build.py
+        run: |
+          pip install commentjson
+          python ./.github/scripts/grammars/build.py
+          
 
       - name: Push
         uses: stefanzweifel/git-auto-commit-action@v5
