@@ -11,7 +11,8 @@ tree-sitter build --wasm
 cp ./tree-sitter-agda.wasm ../../grammars/agda.wasm
 cd ../..
 
-ls -la ./grammars
+
+rm -rf ./tmp
 
 # set -euo pipefail
 

@@ -31,9 +31,9 @@ jobs:
         run: |
           bash ./grammars/scripts/grammars.sh
 
-      # - name: Commit and push changes
-      #   uses: stefanzweifel/git-auto-commit-action@v5
-      #   with:
-      #     commit_message: "Update compiled grammars"
-      #     branch: master
-      #     file_pattern: 'grammars/**'
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update compiled grammars"
+          branch: master
+          file_pattern: 'grammars/**'
