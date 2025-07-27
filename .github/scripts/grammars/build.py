@@ -2,6 +2,7 @@ import os
 import tempfile
 import subprocess
 import shutil
+import json
 import commentjson
 
 ROOT = os.getcwd()
@@ -19,6 +20,8 @@ def clone_nvim_treesitter_queries():
 	return os.path.join(nvim_repo, "queries")
 
 NVIM_QUERY_DIR = clone_nvim_treesitter_queries()
+
+INSTALLED_LANGUAGES = []
 
 def build_grammar(name, cfg):
 	target_dir = os.path.join(ROOT, "grammars", name)
@@ -45,6 +48,7 @@ def build_grammar(name, cfg):
 		else:
 			print(f"⚠️  No queries found for {name}, skipping.")
 
+		INSTALLED_LANGUAGES.append(name)
 		print(f"✅ {name} → {target}")
 
 with open(os.path.join(SCRIPT_DIR, "grammars.jsonc")) as f:
@@ -56,3 +60,8 @@ for name, cfg in config.items():
 		build_grammar(name, cfg)
 	except Exception as e:
 		print(f"❌ Failed to build {name}: {e}")
+
+installed_path = os.path.join(ROOT, "grammars", "installed.json")
+with open(installed_path, "w") as f:
+	json.dump(INSTALLED_LANGUAGES, f, indent=2)
+	print(f"\n📝 Installed languages written to {installed_path}")
