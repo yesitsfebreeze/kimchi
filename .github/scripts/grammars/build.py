@@ -31,7 +31,7 @@ def build_grammar(name, cfg):
 		shutil.copy(grammar_file, os.path.join(target_dir, f"{name}.wasm"))
 		print(f"✅ {name} → {target}")
 
-with open(os.path.join(SCRIPT_DIR, "grammars.json")) as f:
+with open(os.path.join(SCRIPT_DIR, "grammars.jsonc")) as f:
 	config = commentjson.load(f)
 
 for name, cfg in config.items():
