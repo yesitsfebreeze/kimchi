@@ -31,8 +31,7 @@ with open(os.path.join(SCRIPT_DIR, "grammars.json")) as f:
 	config = json.load(f)
 
 for name, cfg in config.items():
-	print(f"🔍 Building grammar: {name}")
-	# try:
-	# 	build_grammar(name, cfg)
-	# except Exception as e:
-	# 	print(f"❌ Failed to build {name}: {e}")
+	try:
+		build_grammar(name, cfg)
+	except Exception as e:
+		print(f"❌ Failed to build {name}: {e}")
