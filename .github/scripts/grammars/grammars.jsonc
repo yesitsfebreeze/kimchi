@@ -30,6 +30,9 @@
   },
   "hlsl": {
     "repo": "https://github.com/tree-sitter-grammars/tree-sitter-hlsl"
+  },
+  "yaml": {
+    "repo": "https://github.com/tree-sitter-grammars/tree-sitter-yaml"
   }
   // "markdown": {
   //   "repo": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
