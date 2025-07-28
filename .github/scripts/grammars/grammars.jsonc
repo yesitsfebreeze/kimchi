@@ -27,6 +27,9 @@
   },
   "toml": {
     "repo": "https://github.com/tree-sitter-grammars/tree-sitter-toml"
+  },
+  "hlsl": {
+    "repo": "https://github.com/tree-sitter-grammars/tree-sitter-hlsl"
   }
   // "markdown": {
   //   "repo": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
