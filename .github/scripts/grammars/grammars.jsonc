@@ -19,6 +19,9 @@
   },
   "zig": {
     "repo": "https://github.com/tree-sitter-grammars/tree-sitter-zig"
+  },
+  "lua": {
+    "repo": "https://github.com/tree-sitter-grammars/tree-sitter-lua"
   }
   // "markdown": {
   //   "repo": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
