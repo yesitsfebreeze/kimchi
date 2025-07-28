@@ -3,7 +3,7 @@
   "languages": [
     {
       "name": "agda",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "050acf1d",
       "files": [
         "agda.wasm",
         "queries/folds.scm",
@@ -13,7 +13,7 @@
     },
     {
       "name": "c",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "99b3a59a",
       "files": [
         "c.wasm",
         "queries/folds.scm",
@@ -25,7 +25,7 @@
     },
     {
       "name": "bash",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "3ed83aba",
       "files": [
         "bash.wasm",
         "queries/folds.scm",
@@ -36,7 +36,7 @@
     },
     {
       "name": "css",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "47c73b2a",
       "files": [
         "css.wasm",
         "queries/folds.scm",
@@ -47,7 +47,7 @@
     },
     {
       "name": "go",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "5906aa40",
       "files": [
         "go.wasm",
         "queries/folds.scm",
@@ -59,7 +59,7 @@
     },
     {
       "name": "python",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "7da2ddf0",
       "files": [
         "python.wasm",
         "queries/folds.scm",
@@ -71,7 +71,7 @@
     },
     {
       "name": "zig",
-      "version": "ba5d91693ab5ff82dbd6ebc107ec7f99fc0859e4",
+      "version": "88600ec1",
       "files": [
         "zig.wasm",
         "queries/folds.scm",
@@ -83,7 +83,7 @@
     },
     {
       "name": "lua",
-      "version": "",
+      "version": "c7e2d6e6",
       "files": [
         "lua.wasm",
         "queries/folds.scm",
