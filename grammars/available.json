@@ -104,6 +104,18 @@
         "queries/injections.scm",
         "queries/locals.scm"
       ]
+    },
+    {
+      "name": "yaml",
+      "version": "b93a99ac",
+      "files": [
+        "yaml.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
+      ]
     }
   ]
 }
