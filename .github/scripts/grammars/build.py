@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import json
 import commentjson
+import hashlib
 
 ROOT = os.getcwd()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,16 +31,18 @@ def get_git_repo_url():
 	
 REPO_URL = get_git_repo_url()
 
-def get_last_commit_for_path(path: str) -> str:
-	try:
-		sha = subprocess.check_output(
-			["git", "log", "-n", "1", "--format=%H", "--", path],
-			cwd=ROOT
-		).decode("utf-8").strip()
-		return sha
-	except Exception:
-		print(f"⚠️  Could not get commit for {path}, using 'unknown'")
-		return "unknown"
+def hash_folder(path: str) -> str:
+	hasher = hashlib.sha256()
+
+	for root, _, files in os.walk(path):
+		for name in sorted(files):
+			file_path = os.path.join(root, name)
+			rel_path = os.path.relpath(file_path, path)
+			hasher.update(rel_path.encode())
+			with open(file_path, "rb") as f:
+				hasher.update(f.read())
+
+	return hasher.hexdigest()[:8]
 
 def run(cmd, cwd):
 	print(f"→ {cmd}")
@@ -87,13 +90,9 @@ def build_grammar(name, cfg):
 		else:
 			print(f"⚠️  No queries found for {name}, skipping.")
 
-
-		lang_path = os.path.join("grammars", name)
-		version = get_last_commit_for_path(lang_path)
-
 		AVAILABLE_LANGUAGES.append({
 			"name": name,
-			"version": version,
+			"version": hash_folder(target_dir),
 			"files": files
 		})
 		
