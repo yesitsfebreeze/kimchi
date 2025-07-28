@@ -92,6 +92,18 @@
         "queries/injections.scm",
         "queries/locals.scm"
       ]
+    },
+    {
+      "name": "toml",
+      "version": "9956102e",
+      "files": [
+        "toml.wasm",
+        "queries/folds.scm",
+        "queries/highlights.scm",
+        "queries/indents.scm",
+        "queries/injections.scm",
+        "queries/locals.scm"
+      ]
     }
   ]
 }
