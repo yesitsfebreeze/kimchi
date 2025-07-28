@@ -38,7 +38,7 @@ func DefaultConfig() Config {
 			"shell",
 			"sql",
 			"xml",
-			"zig"
+			"zig",
 		},
 		Statusbar: StatusbarConfig{
 			Enabled:      true,

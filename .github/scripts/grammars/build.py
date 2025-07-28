@@ -30,6 +30,17 @@ def get_git_repo_url():
 	
 REPO_URL = get_git_repo_url()
 
+def get_last_commit_for_path(path: str) -> str:
+	try:
+		sha = subprocess.check_output(
+			["git", "log", "-n", "1", "--format=%H", "--", path],
+			cwd=ROOT
+		).decode("utf-8").strip()
+		return sha
+	except Exception:
+		print(f"⚠️  Could not get commit for {path}, using 'unknown'")
+		return "unknown"
+
 def run(cmd, cwd):
 	print(f"→ {cmd}")
 	subprocess.run(cmd, shell=True, check=True, cwd=cwd)
@@ -77,8 +88,12 @@ def build_grammar(name, cfg):
 			print(f"⚠️  No queries found for {name}, skipping.")
 
 
+		lang_path = os.path.join("grammars", name)
+		version = get_last_commit_for_path(lang_path)
+
 		AVAILABLE_LANGUAGES.append({
 			"name": name,
+			"version": version,
 			"files": files
 		})
 		
