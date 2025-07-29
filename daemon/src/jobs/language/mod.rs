@@ -12,6 +12,7 @@ const MANIFEST_URL: &str = "https://raw.githubusercontent.com/yesitsfebreeze/kit
 struct Language {
 	name: String,
 	files: Vec<String>,
+	version: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,9 +34,8 @@ fn get_cache_dir(lang: &str) -> Result<PathBuf> {
 	Ok(path)
 }
 
-pub async fn install(lang: String) -> Result<String> {
+async fn get_manifest() -> Result<Manifest> {
 	let client = Client::new();
-
 	let resp = client.get(MANIFEST_URL)
 		.send()
 		.await
@@ -44,14 +44,61 @@ pub async fn install(lang: String) -> Result<String> {
 		.await
 		.context("Failed to read manifest content")?;
 
-	 let manifest: Manifest = serde_json::from_str(&resp)
+	let manifest: Manifest = serde_json::from_str(&resp)
 		.context("Failed to parse manifest JSON")?;
+
+	Ok(manifest)
+}
+
+pub async fn install_multi(langs: Vec<String>) -> Result<String> {
+	let mut results = Vec::new();
+	let manifest = get_manifest().await?;
+	for lang in langs {
+		match _install(&lang, &manifest).await {
+			Ok(msg) => results.push(msg),
+			Err(e) => results.push(format!("Failed to install {}: {}", lang, e)),
+		}
+	}
+	Ok(results.join("\n"))
+}
+
+pub async fn install(lang: String) -> Result<String> {
+	if lang.is_empty() {
+		return Err(anyhow::anyhow!("Language name cannot be empty"));
+	}
+
+	let manifest = get_manifest().await?;
+	_install(&lang, &manifest).await
+		.with_context(|| format!("Failed to install language '{}'", lang))
+}
+
+async fn _install(lang: &str, manifest: &Manifest) -> Result<String> {
+	if lang.is_empty() {
+		return Err(anyhow::anyhow!("Language name cannot be empty"));
+	}
+
+	let client = Client::new();
 
 	let language = manifest.languages.iter()
 		.find(|l| l.name == lang)
 		.with_context(|| format!("Language '{}' is not available", lang))?;
 
 	let cache_dir = get_cache_dir(&lang)?;
+
+	let version_path = cache_dir.join(".version");
+
+	if version_path.exists() {
+		let current_version = fs::read_to_string(&version_path)
+			.unwrap_or_default()
+			.trim()
+			.to_string();
+
+		if current_version == language.version {
+			let msg = format!("Language '{}' is already up to date (version {}).", lang, current_version);
+			println!("{}", msg);
+			return Ok(msg);
+		}
+	}
 
 	for file in &language.files {
 		let url = format!("{}/{}/{}", manifest.url.trim_end_matches('/'), lang, file);
@@ -72,60 +119,13 @@ pub async fn install(lang: String) -> Result<String> {
 			.with_context(|| format!("Failed to write to {}", target.display()))?;
 	}
 
+	fs::write(&version_path, language.version.trim())
+		.with_context(|| format!("Failed to write version to {}", version_path.display()))?;
+
 	let msg = format!("Language '{}' installed successfully.", lang);
 	println!("{}", msg);
 	Ok(msg)
 }
-
-
-
-// async fn ensure_wasm(lang: &str) -> Result<PathBuf> {
-// 	let name = format!("tree-sitter-{}", lang);
-// 	let url = format!("{}/{}/{}/{}.wasm", WASM_PROVIDER, name, WASM_SUB_URL, name);
-
-
-// 	let wasm_path = cache_dir.join(format!("{}.wasm", lang));
-
-// 	if !wasm_path.exists() {
-// 		println!("downloading wasm for '{}'", lang);
-// 		let bytes = Client::new()
-// 			.get(url)
-// 			.send()
-// 			.await
-// 			.context("failed to download grammar wasm")?
-// 			.bytes()
-// 			.await
-// 			.context("failed to read wasm bytes")?;
-// 		fs::write(&wasm_path, &bytes)?;
-// 	}
-
-// 	Ok(wasm_path)
-// }
-
-// async fn ensure_queries(lang: &str) -> Result<&str> {
-// 	let name = format!("tree-sitter-{}", lang);
-// 	let base_url = format!("{}/{}/{}", QUERY_PROVIDER, name, QUERY_SUB_URL);
-
-// 	let client = reqwest::Client::new();
-
-// 	let cache_dir = get_cache_dir(lang)?.join("queries");
-// 	fs::create_dir_all(&cache_dir)?;
-
-// 	for file in KNOWN_QUERY_FILES {
-// 		let url = format!("{}{}", base_url, file);
-// 		let response = client.get(&url).send().await?;
-// 		if response.status().is_success() {
-// 			println!("downloading query file '{}'", url);
-// 			let content = response.bytes().await?;
-// 			fs::write(cache_dir.join(file), content)?;
-// 		} else if response.status().as_u16() != 404 {
-// 			return Err(anyhow::anyhow!("Unexpected error fetching {}: {}", file, response.status()));
-// 		}
-// 	}
-
-// 	Ok("OK")
-// }
-
 
 pub fn get_wasm_path(lang: &str) -> Result<PathBuf> {
 	let cache_dir = get_cache_dir(lang)?;

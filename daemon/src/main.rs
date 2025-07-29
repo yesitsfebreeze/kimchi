@@ -46,6 +46,9 @@ pub enum Request {
 	InstallLanguage {
 		lang: String,
 	},
+	InstallLanguages {
+		langs: Vec<String>,
+	},
 	Highlight {
 		lang: String,
 		code: Option<String>,
@@ -84,6 +87,9 @@ async fn request(line: &str, users: &SharedUsers) -> Result<String> {
 		},
 		Request::InstallLanguage { lang } => {
 			return language::install(lang).await;
+		},
+		Request::InstallLanguages { langs } => {
+			return language::install_multi(langs).await;
 		},
 		Request::Highlight { lang, code, path } => {
 			return highlight::handle(lang, code, path).await;
